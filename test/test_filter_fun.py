@@ -1,4 +1,5 @@
-import json
+# -*-coding:utf-8-*-
+import copy
 import solcx
 import solcast
 from utils.file_util import *
@@ -34,30 +35,32 @@ def get_token(node):
 if __name__ == '__main__':
     # 测试文件
     files_input_json = get_one_test_file()
-    # files_input_json = get_one_file()
     for filename, input_json in files_input_json.items():
         # 生成标准的输出
-
         solcx.set_solc_version('v0.4.25')
         output_json = solcx.compile_standard(input_json)
         # 输出 AST 的节点
         source_nodes = solcast.from_standard_output(output_json)
-        for source_node in source_nodes:
-            # children = source_node.children(filters=None)
-            # children = source_node.children()
-            # children = source_node.children(
-            #     include_children=False,
-            #     filters={'nodeType': "VariableDeclaration"})
-            children = source_node.children(
-                include_children=False,
-                # filters={'nodeType': "FunctionCall", "expression.name": "value"})
-                filters={'nodeType': "FunctionCall"})
-            # filters={'nodeType': "Function",
-             #
-            #          "typeDescriptions.typeIdentifier": "t_function_barecall_payable$__$returns$_t_bool_$value"})
 
-            tokens = []
-            for child in children:
-                # 不为空
-                tokens.append(get_token(child))
-            print(tokens)
+        for source_node in source_nodes:
+            contract_node = None
+            for child in source_node._children:
+                if child.nodeType == 'ContractDefinition':
+                    contract_node = child
+            # 节点筛选
+            pruned_node = copy.deepcopy(source_node)
+            li_set = set()
+            for child in contract_node._children:
+                if child.nodeType == 'FunctionDefinition':
+                    if child.name not in ['withdraw', '']:
+                        continue
+                li_set.add(child)
+            pruned_node._children = li_set
+
+            pruned_node._children
+
+            # tokens = []
+            # for child in children:
+            #     # 不为空
+            #     tokens.append(get_token(child))
+            # print(tokens)

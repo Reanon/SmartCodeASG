@@ -1,9 +1,11 @@
 # -*-coding:utf-8-*-
+import copy
 import json
 import solcx
 import solcast
 from anytree import AnyNode
-from utils.file_util import *
+from utils.file_util import get_one_file
+from utils.prune_util import *
 from collections import defaultdict
 
 """
@@ -32,6 +34,7 @@ EdgeType = {
     'PrevToken': 10,
     'NextUse': 11,
     'PrevUse': 12,
+    'FunCall': 13
 }
 
 
@@ -41,9 +44,109 @@ def get_input_jsons():
     :return:
     """
     pass
+
+
+# ===================================================================== #
+# --------------------------  抽象语法树修剪 ---------------------------- #
+# =====================================================================  #
+
+def prune_ast(source_ast, filepath):
+    """
+    修剪抽象语法树
+    :param source_ast: 原始生成的抽象语法树
+    :param filepath:
+    :return:
+    """
+    # 保存修改之后的节点
+    pruned_ast = copy.deepcopy(source_ast)
+    # 调用 call.value 的 W 函数、调用 W 的 C 函数
+    call_function, delegate_function = get_call_functions(filepath)
+
+    for child in pruned_ast._children:
+        if child.nodeType == 'ContractDefinition':
+            contract_node = set()
+            # 函数内节点
+            for node in child:
+                if node.nodeType == 'FunctionDefinition':
+                    # 查看当前函数是否包含 call.value
+                    if node.name not in call_function and node.name not in delegate_function:
+                        continue
+                contract_node.add(node)
+            child._children = contract_node
+
+    return pruned_ast
+
+
+def create_ast(files_input_json):
+    """
+    生成抽象语法树
+    :param files_input_json: 文件路径 -> AST 的 json 格式
+    :return:
+        ast_dict   : 文件名 -> 合约源节点
+        tokens_size: 所有合约中的 token, 也即不同的节点数
+        tokens_dict: token -> id
+    """
+    paths_ast = []  # 路径 -> AST
+    paths = []
+    asts = []
+    tokens = []  # 所有节点的信息
+    for filepath, input_json in files_input_json.items():
+        # 调用 py-solc-x 生成标准的输出
+        # 指定编译版本
+        solcx.set_solc_version('v0.4.25')
+        output_json = solcx.compile_standard(input_json)
+        # 生成 AST 的节点, 一个文件可能包含多个合约
+        source_nodes = solcast.from_standard_output(output_json)
+        for source_ast in source_nodes:
+            # 文件名
+            paths.append(source_ast.absolutePath)
+            # 修剪抽象语法树
+            pruned_ast = prune_ast(source_ast, filepath)
+            # 添加抽象语法树
+            asts.append(pruned_ast)
+            # 为当前的抽象语法树生成 token
+            get_sequence(pruned_ast, tokens)
+
+    # 文件路径 -> 抽象语法树
+    paths_ast = dict(zip(paths, asts))
+    # token 去重, 并维持一定顺序
+    tokens = sorted(set(tokens), key=tokens.index)
+    # token 数
+    tokens_size = len(tokens)
+    # token 的 id
+    tokens_id = range(tokens_size)
+    # token -> id
+    tokens_dict = dict(zip(tokens, tokens_id))
+    return paths_ast, tokens_size, tokens_dict
+
+
 # ===================================================================== #
 # ---------------------------  生成树  --------------------------------- #
 # =====================================================================  #
+def create_tree(root, node, node_list, parent=None):
+    """
+    生成树
+    :param root: 树根
+    :param node: AST 的节点
+    :param node_list: 节点列表
+    :param parent: 父节点
+    :return:
+    """
+    id = len(node_list)
+    token, children = get_token(node), get_children(node)
+    if id == 0:
+        root.token = token
+        root.data = node
+    else:
+        new_node = AnyNode(id=id, token=token, data=node, parent=parent)
+    node_list.append(node)
+    for child in children:
+        # 当前是根节点
+        if id == 0:
+            create_tree(root, child, node_list, parent=root)
+        else:
+            create_tree(root, child, node_list, parent=new_node)
+
 
 def get_token(node):
     """
@@ -84,13 +187,12 @@ def get_children(node):
 
 def get_sequence(node, tokens):
     """
-    从抽象语法树中获取 标记（token)
+    从抽象语法树中获取标记（token)
     :param node: 抽象语法树的节点
     :param tokens: 标记集合
     :return:
     """
     # 获取当期节点的 token
-
     token = get_token(node)
     # 获取当前节点的子节点
     children = get_children(node)
@@ -102,71 +204,8 @@ def get_sequence(node, tokens):
         get_sequence(child, tokens)
 
 
-def create_ast():
-    """
-    生成抽象语法树
-    :return:
-        ast_dict   : 文件名 -> 合约源节点
-        tokens_size: 所有合约中的 token, 也即不同的节点数
-        tokens_dict: token -> id
-    """
-    paths_ast = []  #
-    paths = []
-    asts = []
-    tokens = []
-    # 测试文件
-    files_input_json = get_one_file()
-    for filename, input_json in files_input_json.items():
-        # 调用 py-solc-x 生成标准的输出
-        output_json = solcx.compile_standard(input_json)
-        # 生成 AST 的节点, 一个文件可能包含多个合约
-        source_nodes = solcast.from_standard_output(output_json)
-        for source_node in source_nodes:
-            # 文件名
-            paths.append(source_node.absolutePath)
-            # 添加抽象语法树
-            asts.append(source_node)
-            get_sequence(source_node, tokens)
-
-    # 文件路径 -> 抽象语法树
-    paths_ast = dict(zip(paths, asts))
-    # token 去重, 并维持一定顺序
-    tokens = sorted(set(tokens), key=tokens.index)
-    # token 数
-    tokens_size = len(tokens)
-    # token 的 id
-    tokens_id = range(tokens_size)
-    # token -> id
-    tokens_dict = dict(zip(tokens, tokens_id))
-    return paths_ast, tokens_size, tokens_dict
-
-
-def create_tree(root, node, node_list, parent=None):
-    """
-    生成树
-    :param root: 树根
-    :param node: AST 的节点
-    :param node_list: 节点列表
-    :param parent: 父节点
-    :return:
-    """
-    id = len(node_list)
-    token, children = get_token(node), get_children(node)
-    if id == 0:
-        root.token = token
-        root.data = node
-    else:
-        new_node = AnyNode(id=id, token=token, data=node, parent=parent)
-    node_list.append(node)
-    for child in children:
-        if id == 0:
-            create_tree(root, child, node_list, parent=root)
-        else:
-            create_tree(root, child, node_list, parent=new_node)
-
-
 # ======================================================================#
-# ---------------------------  控制流  ---------------------------------#
+# ---------------------------  生成控制流  ------------------------------#
 # ======================================================================#
 
 def get_node_edge(node, node_index_list, tokens_dict, edge_source, edge_target, edge_type):
@@ -328,7 +367,7 @@ def get_control_flow_edge(node, tokens_dict, edge_source, edge_target, edge_type
 
 
 # ======================================================================#
-# --------------------------- 数据流  -----------------------------------#
+# --------------------------- 生成数据流  -------------------------------#
 # ======================================================================#
 
 def get_leaf_node_edge(node, tokens_dict, edge_source, edge_target, edge_type):
@@ -392,7 +431,7 @@ def get_variables_node_edge(node, tokens_dict, edge_source, edge_target, edge_ty
     get_variables_node_dict(node, variables_token, variables_dict)
 
     for v in variables_dict.keys():
-        for i in range(len(variables_dict[v]) - 1) :
+        for i in range(len(variables_dict[v]) - 1):
             # 给变量节点之间添加上边
             edge_source.append(variables_dict[v][i])
             edge_target.append(variables_dict[v][i + 1])
@@ -427,14 +466,12 @@ def create_separate_graph(files_ast, tokens_size, tokens_dict):
         new_tree = AnyNode(id=0, token=None, data=None)
         # 从抽象语法树中构造出树来: 树根、AST、节点列表
         create_tree(new_tree, tree, node_list)
-
         # 节点索引列表，保存该树 token 的 id
         node_index_list = []
-        # 边的起始、终结节点
-        edge_source = []
-        edge_target = []
-        # 边类型
-        edge_type = []
+        edge_source = []  # 边的起始
+        edge_target = []  # 边的终结节点
+        edge_type = []  # 边类型
+
         # 为树生成节点访问的边
         get_node_edge(new_tree, node_index_list, tokens_dict, edge_source, edge_target, edge_type)
         # 生成兄弟节点之间的边
@@ -443,11 +480,13 @@ def create_separate_graph(files_ast, tokens_size, tokens_dict):
         get_control_flow_edge(new_tree, tokens_dict, edge_source, edge_target, edge_type)
         # 获取叶子节点之间的边
         get_leaf_node_edge(new_tree, tokens_dict, edge_source, edge_target, edge_type)
-
         # 获取 AST 中变量节点
         variables_token = get_variables_token(tree)
         # 生成变量之间的边
         get_variables_node_edge(new_tree, tokens_dict, edge_source, edge_target, edge_type, variables_token)
+
+        # TODO: 生成函数调用边
+
         # ======================================================================#
         # --------------------------- 整理数据  ---------------------------------#
         # ======================================================================#
@@ -470,10 +509,12 @@ def create_separate_graph(files_ast, tokens_size, tokens_dict):
 
 
 if __name__ == '__main__':
+    # 测试文件
+    files_input_json1 = get_one_file()
     # 创建 AST 树
     # tokens_size 词数量、tokens_dict 词字典、files_ast 文件名 -> ast
-    files_ast, tokens_size, tokens_dict = create_ast()
+    files_ast, tokens_size1, tokens_dict1 = create_ast(files_input_json1)
     # 为每个合约生成一个图
-    graph_dict = create_separate_graph(files_ast, tokens_size, tokens_dict)
+    graph_dict1 = create_separate_graph(files_ast, tokens_size1, tokens_dict1)
 
-    print(graph_dict)
+    print(graph_dict1)

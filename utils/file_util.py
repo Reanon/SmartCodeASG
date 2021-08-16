@@ -3,6 +3,9 @@ import os
 import sys
 
 
+# ===================================================================== #
+# --------------------------  基本文件操作   ---------------------------  #
+# ===================================================================== #
 def file_walk(file_dir):
     """
     os.walk 会遍历指定目录下的所有子文件夹和子文件夹中的所有文件
@@ -35,15 +38,9 @@ def get_files_name(contract_path):
     return filenames
 
 
-def get_one_file():
-    """
-    返回一个测试用的标准 json 文件
-    """
-    contract_path = "../contracts/test/"
-    filename = "Ballot.sol"
-    file_input = {contract_path + filename: get_standard_json(contract_path, filename)}
-    return file_input
-
+# ===================================================================== #
+# -----------------------  solc 标准输入格式   -------------------------  #
+# ===================================================================== #
 
 def get_standard_json(contract_path, filename):
     """
@@ -72,11 +69,36 @@ def get_standard_json(contract_path, filename):
     }
     '''
     # json 数据转成 dict 字典
-    input = json.loads(standard_json)
+    standard_input = json.loads(standard_json)
     # 添加文件
     sources = {filename: {'content': content}}
-    input["sources"] = sources
-    return input
+    standard_input["sources"] = sources
+    return standard_input
+
+
+# ===================================================================== #
+# --------------------------  生成测试文件   ---------------------------- #
+# =====================================================================  #
+
+def get_one_file():
+    """
+    返回一个测试用的标准 json 文件
+    """
+    contract_path = "../contracts/test/"
+    filename = "Ballot.sol"
+    filename = "reentrance.sol"
+    filepath_input = {contract_path + filename: get_standard_json(contract_path, filename)}
+    return filepath_input
+
+
+def get_one_test_file():
+    """
+    返回一个测试用的标准 json 文件
+    """
+    contract_path = "../contracts/test/"
+    filename = "call.sol"
+    file_input = {contract_path + filename: get_standard_json(contract_path, filename)}
+    return file_input
 
 
 if __name__ == '__main__':

@@ -4,9 +4,9 @@ import json
 import solcx
 import solcast
 from anytree import AnyNode
-from utils.file_util import get_one_file
 from utils.prune_util import *
 from collections import defaultdict
+from utils.file_util import get_one_file
 
 """
 从智能合约中生成树
@@ -61,18 +61,27 @@ def prune_ast(source_ast, filepath):
     pruned_ast = copy.deepcopy(source_ast)
     # 调用 call.value 的 W 函数、调用 W 的 C 函数
     call_function, delegate_function = get_call_functions(filepath)
-
     for child in pruned_ast._children:
+        source_node = set()
         if child.nodeType == 'ContractDefinition':
+            key = 0
             contract_node = set()
             # 函数内节点
             for node in child:
                 if node.nodeType == 'FunctionDefinition':
                     # 查看当前函数是否包含 call.value
-                    if node.name not in call_function and node.name not in delegate_function:
-                        continue
-                contract_node.add(node)
+                    if node.name in call_function or node.name in delegate_function:
+                        # 函数则不添加当前节点继续
+                        key += 1
+                        contract_node.add(node)
+                else:
+                    contract_node.add(node)
             child._children = contract_node
+            if key > 0:
+                source_node.add(child)
+        else:
+            source_node.add(child)
+    pruned_ast._children = source_node
 
     return pruned_ast
 
@@ -80,7 +89,7 @@ def prune_ast(source_ast, filepath):
 def create_ast(files_input_json):
     """
     生成抽象语法树
-    :param files_input_json: 文件路径 -> AST 的 json 格式
+    :param files_input_json: 字典，文件路径 -> AST 的 json 格式
     :return:
         ast_dict   : 文件名 -> 合约源节点
         tokens_size: 所有合约中的 token, 也即不同的节点数
@@ -90,12 +99,12 @@ def create_ast(files_input_json):
     paths = []
     asts = []
     tokens = []  # 所有节点的信息
+    # 指定编译版本
+    solcx.set_solc_version('v0.4.25')
     for filepath, input_json in files_input_json.items():
         # 调用 py-solc-x 生成标准的输出
-        # 指定编译版本
-        solcx.set_solc_version('v0.4.25')
         output_json = solcx.compile_standard(input_json)
-        # 生成 AST 的节点, 一个文件可能包含多个合约
+        # 生成 AST 的节点,一个文件生成一个节点
         source_nodes = solcast.from_standard_output(output_json)
         for source_ast in source_nodes:
             # 文件名
@@ -509,12 +518,12 @@ def create_separate_graph(files_ast, tokens_size, tokens_dict):
 
 
 if __name__ == '__main__':
-    # 测试文件
+    # 测试单个文件
     files_input_json1 = get_one_file()
     # 创建 AST 树
     # tokens_size 词数量、tokens_dict 词字典、files_ast 文件名 -> ast
-    files_ast, tokens_size1, tokens_dict1 = create_ast(files_input_json1)
+    files_ast1, tokens_size1, tokens_dict1 = create_ast(files_input_json1)
     # 为每个合约生成一个图
-    graph_dict1 = create_separate_graph(files_ast, tokens_size1, tokens_dict1)
+    graph_dict1 = create_separate_graph(files_ast1, tokens_size1, tokens_dict1)
 
     print(graph_dict1)

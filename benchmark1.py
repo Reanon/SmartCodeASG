@@ -56,7 +56,7 @@ def construct_benchmark(contract_dict):
 
 
 def divide_benchmark(contract_bench):
-    benchmark_path = '../benchmark'
+    benchmark_path = 'benchmark'
     for contract_type in contract_bench.keys():
         contract_list = contract_bench[contract_type]
         # 打乱列表

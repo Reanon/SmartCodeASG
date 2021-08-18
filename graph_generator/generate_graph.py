@@ -75,12 +75,16 @@ def prune_ast(source_ast, filepath):
                         key += 1
                         contract_node.add(node)
                 else:
-                    contract_node.add(node)
+                    # 添加函数定义之外的边
+                    # contract_node.add(node)
+                    pass
             child._children = contract_node
             if key > 0:
                 source_node.add(child)
         else:
-            source_node.add(child)
+            # 添加其他节点, 这里注释掉
+            # source_node.add(child)
+            pass
     pruned_ast._children = source_node
 
     return pruned_ast
@@ -269,7 +273,16 @@ def get_node_if_edge(node, tokens_dict, edge_source, edge_target, edge_type):
         # IF 语句的判断节点
         condition = data.condition
         falseBody = data.falseBody[0] if data.falseBody is not None and len(data.falseBody) else None
-        trueBody = data.trueBody[0] if len(data.trueBody) else None
+        # 修改报错
+        # trueBody = data.trueBody[0] if len(data.trueBody) else None
+        if data.trueBody is None:
+            trueBody = None
+        elif isinstance(data.trueBody,list):
+            trueBody = data.trueBody[0]
+        else:
+            trueBody = data.trueBody
+
+
         conditionToken, falseToken, trueToken = get_token(condition), get_token(falseBody), get_token(trueBody),
         condition_node, false_node, true_node = None, None, None
         # 从solc-ast 节点中找出 AnyTree 对应的节点

@@ -43,7 +43,40 @@ def get_files_name(contract_path):
 # -----------------------  solc 标准输入格式   -------------------------  #
 # ===================================================================== #
 
-def get_standard_json(contract_path, filename):
+def get_standard_json(filepath):
+    """
+    生成该合约的标准输入
+    """
+    # 读取文件内容
+    content = ''
+    with open(filepath, 'r') as f:
+        content = f.read()
+    # 标准 json 输入
+    standard_json = '''
+    {
+        "language": "Solidity",
+        "sources": {},
+        "settings": {
+            "outputSelection": {
+                "*": {
+                    "*": ["*"]
+                },
+                "*": {
+                    "": [ "ast" ]
+                }
+            }
+        }
+    }
+    '''
+    # json 数据转成 dict 字典
+    standard_input = json.loads(standard_json)
+    # 添加文件
+    sources = {filepath: {'content': content}}
+    standard_input["sources"] = sources
+    return standard_input
+
+
+def get_standard_json_old(contract_path, filename):
     """
     生成该合约的标准输入
     """

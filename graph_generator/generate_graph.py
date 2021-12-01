@@ -1,6 +1,5 @@
 # -*-coding:utf-8-*-
 import copy
-import json
 import solcx
 import solcast
 from anytree import AnyNode
@@ -54,7 +53,7 @@ def prune_ast(source_ast, filepath):
     """
     修剪抽象语法树
     :param source_ast: 原始生成的抽象语法树
-    :param filepath:
+    :param filepath: 路径需要使用绝对路径, 如果为相对路径则需要修改 TODo
     :return:
     """
     # 保存修改之后的节点
@@ -76,15 +75,15 @@ def prune_ast(source_ast, filepath):
                         contract_node.add(node)
                 else:
                     # 添加函数定义之外的边
-                    # contract_node.add(node)
-                    pass
+                    contract_node.add(node)
+                    # pass
             child._children = contract_node
             if key > 0:
                 source_node.add(child)
         else:
             # 添加其他节点, 这里注释掉
-            # source_node.add(child)
-            pass
+            source_node.add(child)
+            # pass
     pruned_ast._children = source_node
 
     return pruned_ast
@@ -111,14 +110,22 @@ def create_ast(files_input_json):
         # 生成 AST 的节点,一个文件生成一个节点
         source_nodes = solcast.from_standard_output(output_json)
         for source_ast in source_nodes:
-            # 文件名
-            paths.append(source_ast.absolutePath)
-            # 修剪抽象语法树
-            pruned_ast = prune_ast(source_ast, filepath)
+            # 使用 路径 + 文件名
+            # paths.append(source_ast.absolutePath)
+            # 只使用合约名作为key
+            paths.append(filepath)
+            # 是否修剪抽象语法树（0 为不修剪）
+            flag = 0
+            ast = source_ast
+            if flag == 1:
+                # 修剪抽象语法树
+                pruned_ast = prune_ast(source_ast, filepath)
+                ast = pruned_ast
+
             # 添加抽象语法树
-            asts.append(pruned_ast)
+            asts.append(ast)
             # 为当前的抽象语法树生成 token
-            get_sequence(pruned_ast, tokens)
+            get_sequence(ast, tokens)
 
     # 文件路径 -> 抽象语法树
     paths_ast = dict(zip(paths, asts))
@@ -272,26 +279,30 @@ def get_node_if_edge(node, tokens_dict, edge_source, edge_target, edge_type):
         data = node.data
         # IF 语句的判断节点
         condition = data.condition
-        falseBody = data.falseBody[0] if data.falseBody is not None and len(data.falseBody) else None
+        false_body = None
+        try:
+            false_body = data.falseBody[0] if data.falseBody is not None and len(data.falseBody) else None
+        except TypeError as e:
+            false_body = None
+
         # 修改报错
         # trueBody = data.trueBody[0] if len(data.trueBody) else None
         if data.trueBody is None:
-            trueBody = None
-        elif isinstance(data.trueBody,list):
-            trueBody = data.trueBody[0]
+            true_body = None
+        elif isinstance(data.trueBody, list):
+            true_body = data.trueBody[0]
         else:
-            trueBody = data.trueBody
+            true_body = data.trueBody
 
-
-        conditionToken, falseToken, trueToken = get_token(condition), get_token(falseBody), get_token(trueBody),
+        condition_token, false_token, true_token = get_token(condition), get_token(false_body), get_token(true_body),
         condition_node, false_node, true_node = None, None, None
-        # 从solc-ast 节点中找出 AnyTree 对应的节点
+        # 从 solc-ast 节点中找出 AnyTree 对应的节点
         for child in node.children:
-            if child.token == conditionToken:
+            if child.token == condition_token:
                 condition_node = child
-            if child.token == falseToken:
+            if child.token == false_token:
                 false_node = child
-            if child.token == trueToken:
+            if child.token == true_token:
                 true_node = child
             # IfStatement 分别给子节点都添加上边
             edge_source.append(node.id)
@@ -524,8 +535,8 @@ def create_separate_graph(files_ast, tokens_size, tokens_dict):
         graph_dict[file] = [[node_index_list, edges, edge_type], graph_length]
 
     # 打印节点
-    print(edge_source)
-    print(edge_target)
+    # print(edge_source)
+    # print(edge_target)
     # print(edge_type)
     return graph_dict
 

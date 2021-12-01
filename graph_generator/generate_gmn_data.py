@@ -15,9 +15,10 @@ def create_gmn_data(dataset, graph_dict):
     :param device: 设备
     :return:
     """
-    # 数据标签所在位置
+    # 数据标签所在位置, 相对路径在单个文件测试的时候有效
     # dataset_directory = '../benchmark/'
-    dataset_directory = 'benchmark/'
+    # 绝对路径, 在检测的时候有效
+    dataset_directory = './benchmark/'
     filepath = dataset_directory + dataset + '/'
     if dataset in ['reentrancy', 'overflow']:
         train_file = open(filepath + 'train.txt')
@@ -54,23 +55,27 @@ def create_pair_data(graph_dict, filepath_list):
         pair_info = line.split()
         # code1path = pair_info[0].replace('\\', '/')
         # code2path = pair_info[1].replace('\\', '/')
-        code1path = pair_info[0]
-        code2path = pair_info[1]
-        label = int(pair_info[2])
-        if code1path in graph_dict.keys() and code2path in graph_dict.keys():
-            # 从数据集汇总获取对应的数据
-            data1 = graph_dict[code1path]
-            data2 = graph_dict[code2path]
-            # 图节点 id, 图的两个边向量、边对应的类型、整个图的大小
-            asg1_node_list, asg1_edges, asg1_edge_type, asg1_length = data1[0][0], data1[0][1], data1[0][2], data1[1]
-            asg2_node_list, asg2_edges, asg2_edge_type, asg2_length = data2[0][0], data2[0][1], data2[0][2], data2[1]
-            # 图的边类型为空时,
-            if not asg1_edge_type:
-                asg1_edge_type = None
-                asg2_edge_type = None
-            # 生成对应的数据
-            data = [[asg1_node_list, asg2_node_list, asg1_edges, asg2_edges, asg1_edge_type, asg2_edge_type], label]
-            datalist.append(data)
+        try:
+            code1path = pair_info[0]
+            code2path = pair_info[1]
+            label = int(pair_info[2])
+            if code1path in graph_dict.keys() and code2path in graph_dict.keys():
+                # 从数据集汇总获取对应的数据
+                data1 = graph_dict[code1path]
+                data2 = graph_dict[code2path]
+                # 图节点 id, 图的两个边向量、边对应的类型、整个图的大小
+                asg1_node_list, asg1_edges, asg1_edge_type, asg1_length = data1[0][0], data1[0][1], data1[0][2], data1[1]
+                asg2_node_list, asg2_edges, asg2_edge_type, asg2_length = data2[0][0], data2[0][1], data2[0][2], data2[1]
+                # 图的边类型为空时,
+                if not asg1_edge_type:
+                    asg1_edge_type = None
+                    asg2_edge_type = None
+                # 生成对应的数据
+                data = [[asg1_node_list, asg2_node_list, asg1_edges, asg2_edges, asg1_edge_type, asg2_edge_type], label]
+                datalist.append(data)
+        except IndexError:
+            print("Error")
+
     return datalist
 
 
@@ -89,11 +94,16 @@ def contract_data(contract_path):
             for root2, dirs2, files in os.walk(os.path.join(contract_path, contract_type)):
                 for file in files:
                     if file.endswith('sol'):
-                        contract_files.append(os.path.join(root1, contract_type, file))
+                        # 只添加文件名
+                        filepath = os.path.join(root1, contract_type, file)
+                        filepath_input[file] = get_standard_json(filepath)
+                        # contract_files.append()
 
-    for filepath in contract_files:
-        # 将文件路径传入
-        filepath_input[filepath] = get_standard_json(filepath)
+                        # contract_files.append(file)
+
+    # for filepath in contract_files:
+    #     # 将文件路径传入
+    #     filepath_input[filepath] =
     return filepath_input
 
 

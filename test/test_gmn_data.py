@@ -18,19 +18,19 @@ def create_gmn_data(dataset_id, graph_dict, tokens_size, tokens_dict, device):
     if dataset_id == '0':
         train_file = open(dataset_path + 'trainall.txt')
         valid_file = open(dataset_path + 'valid.txt')
-        test_file = open(dataset_path + 'test.txt')
+        test_file = open(dataset_path + 'valid.txt')
     elif dataset_id == '13':
         train_file = open(dataset_path + 'train13.txt')
         valid_file = open(dataset_path + 'valid.txt')
-        test_file = open(dataset_path + 'test.txt')
+        test_file = open(dataset_path + 'valid.txt')
     elif dataset_id == '11':
         train_file = open(dataset_path + 'train11.txt')
         valid_file = open(dataset_path + 'valid.txt')
-        test_file = open(dataset_path + 'test.txt')
+        test_file = open(dataset_path + 'valid.txt')
     elif dataset_id == '0small':
         train_file = open(dataset_path + 'trainsmall.txt')
         valid_file = open(dataset_path + 'valid.txt')
-        test_file = open(dataset_path + 'test.txt')
+        test_file = open(dataset_path + 'valid.txt')
     elif dataset_id == '13small':
         train_file = open(dataset_path + 'train13small.txt')
         valid_file = open(dataset_path + 'validsmall.txt')

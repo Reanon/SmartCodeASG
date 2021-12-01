@@ -138,27 +138,43 @@ def test(model, dataset):
         if prediction <= args.threshold and label.item() == 1:
             fn += 1
             # print('fn')
-    print(tp, tn, fp, fn)
-    p = 0.0
-    r = 0.0
-    f1 = 0.0
-    if tp + fp == 0:
-        print('precision is none')
-        return
-    p = tp / (tp + fp)
-    if tp + fn == 0:
-        print('recall is none')
-        return
-    r = tp / (tp + fn)
-    f1 = 2 * p * r / (p + r)
-    print('precision')
-    print(p)
-    print('recall')
-    print(r)
-    print('F1')
-    print(f1)
+    # 训练之后计算表现
+    performance(tn, fn, fp, tp)
+    # p = 0.0
+    # r = 0.0
+    # f1 = 0.0
+    # if tp + fp == 0:
+    #     print('precision is none')
+    #     return
+    # p = tp / (tp + fp)
+    # if tp + fn == 0:
+    #     print('recall is none')
+    #     return
+    # r = tp / (tp + fn)
+    # f1 = 2 * p * r / (p + r)
+    # print('precision')
+    # print(p)
+    # print('recall')
+    # print(r)
+    # print('F1')
+    # print(f1)
     return results
+
+
+def performance(tn, fn, fp, tp):
+    print(tn, fn, fp, tp)
+
+    print('Accuracy:', (tn + tp) / (tn + fp + fn + tp))
+    recall = tp / (tp + fn)
+    print('Recall(TPR): ', recall)
+    print('False positive rate(FPR): ', fp / (fp + tn))
+    # print('False negative rate(FNR): ', fn / (fn + tp))
+
+    precision = tp / (tp + fp)
+    print('Precision: ', precision)
+    print('F1 score: ', (2 * precision * recall) / (precision + recall))
 
 
 if __name__ == '__main__':
     main()
+    # performance(244, 150, 98, 342)

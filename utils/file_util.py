@@ -118,7 +118,7 @@ def get_one_file():
     """
     返回一个测试用的标准 json 文件
     """
-    contract_path = "../contracts_test/test/reentrancy/"
+    contract_path = "../contracts_test/test/r/"
     # filename = "Ballot.sol"
     # filename = "reentrance.sol"
     # 多个合约

@@ -152,6 +152,7 @@ def create_tree(root, node, node_list, parent=None):
     :param parent: 父节点
     :return:
     """
+    # id = 0 时，说明是根节点
     id = len(node_list)
     token, children = get_token(node), get_children(node)
     if id == 0:
@@ -486,7 +487,7 @@ def create_separate_graph(files_ast, tokens_size, tokens_dict):
     :return: graph_dict: 合约名 -> 合约图结构
         graph_dict 包含三个维度的数据
             node_index_list: 图节点的 id
-            edges: 节点与节点之间的边
+            edges: 节点与节点之间的边，二维
             edge_type: 边的类型
     """
     graph_dict = {}

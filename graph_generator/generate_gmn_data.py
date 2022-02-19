@@ -64,8 +64,10 @@ def create_pair_data(graph_dict, filepath_list):
                 data1 = graph_dict[code1path]
                 data2 = graph_dict[code2path]
                 # 图节点 id, 图的两个边向量、边对应的类型、整个图的大小
-                asg1_node_list, asg1_edges, asg1_edge_type, asg1_length = data1[0][0], data1[0][1], data1[0][2], data1[1]
-                asg2_node_list, asg2_edges, asg2_edge_type, asg2_length = data2[0][0], data2[0][1], data2[0][2], data2[1]
+                asg1_node_list, asg1_edges, asg1_edge_type, asg1_length = data1[0][0], data1[0][1], data1[0][2], data1[
+                    1]
+                asg2_node_list, asg2_edges, asg2_edge_type, asg2_length = data2[0][0], data2[0][1], data2[0][2], data2[
+                    1]
                 # 图的边类型为空时,
                 if not asg1_edge_type:
                     asg1_edge_type = None

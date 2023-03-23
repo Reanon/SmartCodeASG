@@ -2,6 +2,7 @@
 import argparse
 
 
+# 解析字符串
 def parameter_parser():
     # Experiment parameters
     # 工具描述
@@ -22,7 +23,6 @@ def parameter_parser():
     parser.add_argument('-b', '--batch_size', type=int, default=32, help='batch size')
 
     parser.add_argument('-d', '--dropout', type=float, default=0.2, help='dropout rate')
-
 
     # -------
     # parser.add_argument("--cuda", default=True)

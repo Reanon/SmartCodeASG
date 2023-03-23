@@ -22,7 +22,6 @@ args = parameter_parser()
 
 device = torch.device('cuda:0')
 
-
 def create_batches(data):
     # random.shuffle(data)
     batches = [data[graph:graph + args.batch_size] for graph in range(0, len(data), args.batch_size)]
@@ -81,7 +80,7 @@ def main():
             main_index = main_index + len(batch)
             loss = total_loss / main_index
             epochs.set_description("Epoch (Loss=%g)" % round(loss, 5))
-
+        # 测试模型并且给出评估指标
         test_results = test(model, test_data)
 
         with open('results/' + args.model + '_epoch_' + str(epoch + 1), mode='w') as f:
@@ -140,28 +139,13 @@ def test(model, dataset):
             # print('fn')
     # 训练之后计算表现
     performance(tn, fn, fp, tp)
-    # p = 0.0
-    # r = 0.0
-    # f1 = 0.0
-    # if tp + fp == 0:
-    #     print('precision is none')
-    #     return
-    # p = tp / (tp + fp)
-    # if tp + fn == 0:
-    #     print('recall is none')
-    #     return
-    # r = tp / (tp + fn)
-    # f1 = 2 * p * r / (p + r)
-    # print('precision')
-    # print(p)
-    # print('recall')
-    # print(r)
-    # print('F1')
-    # print(f1)
     return results
 
 
 def performance(tn, fn, fp, tp):
+    """
+    评估模型的指标
+    """
     print(tn, fn, fp, tp)
 
     print('Accuracy:', (tn + tp) / (tn + fp + fn + tp))

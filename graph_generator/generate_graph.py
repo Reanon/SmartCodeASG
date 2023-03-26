@@ -57,11 +57,11 @@ def prune_ast(source_ast, filepath):
     :return:
     """
     # 保存修改之后的节点
+    source_node = set()
     pruned_ast = copy.deepcopy(source_ast)
     # 调用 call.value 的 W 函数、调用 W 的 C 函数
     call_function, delegate_function = get_call_functions(filepath)
     for child in pruned_ast._children:
-        source_node = set()
         if child.nodeType == 'ContractDefinition':
             key = 0
             contract_node = set()

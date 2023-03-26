@@ -132,7 +132,7 @@ class GMNLayer(MessagePassing, ABC):
         # x_j has shape [E, out_channels]
         # Step 3: Normalize node features.
         # print(x_i.size(),x_j.size())
-        if type(edge_weight) == type(None):
+        if edge_weight is None:
             edge_weight = torch.ones(x_i.size(0), x_i.size(1)).to(self.device)
             m = F.relu(self.fmessage(torch.cat([x_i, x_j, edge_weight], dim=1)))
         else:
@@ -177,10 +177,7 @@ class GMNNet(torch.nn.Module):
             edge_weight2 = edge_weight2.squeeze(1)
         for i in range(self.num_layers):
             x1, x2 = self.gmn_layer.forward(x1, x2, edge_index1, edge_index2, edge_weight1, edge_weight2, mode='train')
-            '''if i==self.num_layers-1:
-                x1,x2=self.gmnlayer.forward(x1,x2 ,edge_index1, edge_index2,edge_weight1,edge_weight2,mode=mode)
-            else:
-                x1, x2 = self.gmnlayer.forward(x1, x2, edge_index1, edge_index2, edge_weight1, edge_weight2, mode='train')'''
+
         batch1 = torch.zeros(x1.size(0), dtype=torch.long).to(self.device)  # without batching
         batch2 = torch.zeros(x2.size(0), dtype=torch.long).to(self.device)
         hg1 = self.pool(x1, batch=batch1)

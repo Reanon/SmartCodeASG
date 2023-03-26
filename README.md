@@ -8,7 +8,7 @@
 
 ## Citation
 
-中文论文：[Toward Vulnerability Detection for Ethereum Smart Contracts Using Graph-Matching Network](./doc/paper.pdf)
+English Version: [Toward Vulnerability Detection for Ethereum Smart Contracts Using Graph-Matching Network](./doc/paper.pdf)
 
 中文论文：[以太坊智能合约漏洞检测方法研究](./doc/thesis.pdf)
 

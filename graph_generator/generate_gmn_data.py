@@ -10,9 +10,6 @@ def create_gmn_data(dataset, graph_dict):
     生成用于 GMN 匹配的数据集
     :param dataset: 数据集类型
     :param graph_dict: 文件标识 -> ASG
-    :param tokens_size: 词数量
-    :param tokens_dict: 词字典
-    :param device: 设备
     :return:
     """
     # 数据标签所在位置, 相对路径在单个文件测试的时候有效

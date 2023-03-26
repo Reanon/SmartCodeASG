@@ -2,6 +2,9 @@ import json
 import os
 import sys
 
+WORK_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(WORK_DIR)
+
 
 # ===================================================================== #
 # --------------------------  基本文件操作   ---------------------------  #

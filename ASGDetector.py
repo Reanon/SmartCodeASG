@@ -15,7 +15,7 @@ from tqdm import tqdm, trange
 from parser import parameter_parser
 from graph_generator.generate_gmn_data import contract_data, create_gmn_data
 from graph_generator.generate_graph import create_ast, create_separate_graph
-from model.GMN import *
+from model.gmn import *
 from torch_geometric.data import Data, DataLoader
 
 args = parameter_parser()

@@ -22,6 +22,7 @@ args = parameter_parser()
 
 device = torch.device('cuda:0')
 
+
 def create_batches(data):
     # random.shuffle(data)
     batches = [data[graph:graph + args.batch_size] for graph in range(0, len(data), args.batch_size)]

@@ -58,9 +58,3 @@ if __name__ == '__main__':
             pruned_node._children = li_set
 
             pruned_node._children
-
-            # tokens = []
-            # for child in children:
-            #     # 不为空
-            #     tokens.append(get_token(child))
-            # print(tokens)

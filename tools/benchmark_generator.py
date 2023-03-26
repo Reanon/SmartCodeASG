@@ -106,7 +106,3 @@ if __name__ == '__main__':
         file_path = os.path.join(contracts_path, set_type)
         construct_benchmark(file_path, set_type)
 
-    #     contract_dict1 = get_contract_dict(file_path)
-    #
-    # contract_bench1 = construct_benchmark(contract_dict1)
-    # divide_benchmark(contract_bench1)

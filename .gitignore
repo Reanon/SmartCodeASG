@@ -5,3 +5,4 @@
 # Editor
 .idea/
 .vscode/
+venv/

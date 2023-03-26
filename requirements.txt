@@ -1,0 +1,8 @@
+anytree==2.8.0
+numpy==1.24.2
+py_solc_ast==1.2.9
+py_solc_x==1.1.1
+solcast==0.2.1
+torch==2.0.0
+torch_geometric==2.3.0
+tqdm==4.65.0

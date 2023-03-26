@@ -2,7 +2,7 @@
 import copy
 import solcx
 import solcast
-from utils.file_util import *
+from common.utils.file import *
 
 NODE_NAME = ['FunctionDefinition', 'PrimaryExpression', 'VariableDeclaration']
 # 赋值语句

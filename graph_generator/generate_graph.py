@@ -3,9 +3,9 @@ import copy
 import solcx
 import solcast
 from anytree import AnyNode
-from utils.prune_util import *
+from common.utils.prune import *
 from collections import defaultdict
-from utils.file_util import get_one_file
+from common.utils.file import get_one_file
 
 """
 从智能合约中生成树

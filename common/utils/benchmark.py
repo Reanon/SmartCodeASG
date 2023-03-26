@@ -1,11 +1,15 @@
 # -*-coding:utf-8-*-
 import json
 import os
+import sys
 import random
 
 """
 生成测试集和训练集
 """
+
+WORK_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(WORK_DIR)
 
 
 def get_contract_dict(file_dir):
@@ -22,7 +26,7 @@ def get_contract_dict(file_dir):
             contract_files = []
             for root2, dirs2, files in os.walk(os.path.join(file_dir, contract_type)):
                 for file in files:
-                    if file.endswith('sol'):
+                    if file.endswith(bytes(".sol")):
                         contract_files.append(os.path.join(root1, contract_type, file))
             contracts[contract_type] = contract_files
     return contracts
@@ -60,7 +64,7 @@ def divide_benchmark(contract_bench):
     :param contract_bench:
     :return:
     """
-    benchmark_path = '../benchmark'
+    benchmark_path = '../../benchmark'
     for contract_type in contract_bench.keys():
         contract_list = contract_bench[contract_type]
         # 打乱列表

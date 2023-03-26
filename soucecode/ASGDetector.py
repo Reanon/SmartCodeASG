@@ -1,22 +1,10 @@
 # -*-coding:utf-8-*-
-import math
-import os
-import random
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 import torch.optim as optim
-import numpy as np
-import time
-import sys
-import argparse
 from tqdm import tqdm, trange
 from parser import parameter_parser
 from graph_generator.generate_gmn_data import contract_data, create_gmn_data
 from graph_generator.generate_graph import create_ast, create_separate_graph
-from model.gmn import *
-from torch_geometric.data import Data, DataLoader
+from common.model.gmn import *
 
 args = parameter_parser()
 

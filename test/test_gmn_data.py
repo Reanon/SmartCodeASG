@@ -1,6 +1,6 @@
 # -*-coding:utf-8-*-
 from graph_generator.generate_graph import create_ast, create_separate_graph
-from utils.file_util import get_one_file
+from common.utils.file import get_one_file
 
 
 def create_gmn_data(dataset_id, graph_dict, tokens_size, tokens_dict, device):

@@ -2,7 +2,7 @@
 import os
 
 from graph_generator.generate_graph import create_ast, create_separate_graph
-from utils.file_util import get_one_file, get_standard_json, get_files_name
+from common.utils.file import get_standard_json
 
 
 def create_gmn_data(dataset, graph_dict):

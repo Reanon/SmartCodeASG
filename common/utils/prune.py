@@ -1,5 +1,10 @@
 # -*-coding:utf-8-*
+import os
+import sys
 import re
+
+WORK_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(WORK_DIR)
 
 """
 用以生成带修剪的函数名
@@ -125,7 +130,7 @@ def get_call_functions(filepath):
 
 
 if __name__ == '__main__':
-    test_contract = "../contracts/test/call.sol"
+    test_contract = "../../contracts/test/call.sol"
     # list_fun = split_function(test_contract)
     call_functions, delegate_functions = get_call_functions(test_contract)
     print(call_functions, delegate_functions)

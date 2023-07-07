@@ -12,6 +12,8 @@ English Version: [Toward Vulnerability Detection for Ethereum Smart Contracts Us
 
 中文论文：[以太坊智能合约漏洞检测方法研究](./doc/thesis.pdf)
 
+中文汇报：[以太坊智能合约漏洞检测方法研究](./doc/slide.pptx)
+
 
 
 ## Dataset
